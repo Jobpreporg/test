@@ -29,7 +29,7 @@ steps:
 
 - task: AzureWebApp@1
   inputs:
-    azureSubscription: 'vertexweb'  # Your service connection name
+    azureSubscription: 'Vertex_SC'  # Your service connection name
     appName: 'radicaldemoapp'       # Your Azure App Service name
     package: '$(Pipeline.Workspace)/output.zip' # Path to your zip file
   displayName: 'Deploy to Azure App Service'
