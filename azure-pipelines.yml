@@ -5,26 +5,11 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- task: CopyFiles@2
-  inputs:
-    SourceFolder: '$(Build.SourcesDirectory)'
-    Contents: '**'
-    TargetFolder: '$(Build.ArtifactStagingDirectory)'
-
-- task: PublishBuildArtifacts@1
-  inputs:
-    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    ArtifactName: 'drop'
-
-- task: DownloadPipelineArtifact@2
-  inputs:
-    artifact: 'drop'
-    path: '$(Pipeline.Workspace)/drop'
-
 - task: SSH@0
   inputs:
     sshEndpoint: 'radicalVMSC'
     runOptions: 'inline'
     inline: |
+      echo "Uploading files..."
       sudo apt install rsync -y
-      rsync -avz $(Pipeline.Workspace)/drop/ /var/www/html/
+      rsync -avz $(Build.SourcesDirectory)/ azureuser@40.81.228.8:/var/www/html/
