@@ -1,15 +1,36 @@
 trigger:
-- main
+- main   # Adjust to your branch
 
 pool:
   vmImage: 'ubuntu-latest'
 
+variables:
+  webRoot: '/var/www/html'
+
 steps:
+# Step 1: Copy source files to artifact staging
+- task: CopyFiles@2
+  inputs:
+    SourceFolder: '$(Build.SourcesDirectory)'
+    Contents: '**'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+# Step 2: Clean existing files in the VM's web root
 - task: SSH@0
   inputs:
-    sshEndpoint: 'radicalVMSC'
+    sshEndpoint: 'radicalvmSC'   # Replace with your actual service connection name
     runOptions: 'inline'
     inline: |
-      echo "Uploading files..."
-      sudo apt install rsync -y
-      rsync -avz $(Build.SourcesDirectory)/ nazeer@40.81.228.8:/var/www/html/
+      echo "Cleaning existing files in $(webRoot)..."
+      sudo rm -rf $(webRoot)/*
+      echo "Clean complete."
+
+# Step 3: Copy new files from pipeline to VM
+- task: CopyFilesOverSSH@0
+  inputs:
+    sshEndpoint: 'radicalvmSC'   # Replace with your actual service connection name
+    sourceFolder: '$(Build.ArtifactStagingDirectory)'
+    contents: '**'
+    targetFolder: '$(webRoot)'
+    cleanTargetFolder: false
+    overwrite: true
