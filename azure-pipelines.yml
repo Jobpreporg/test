@@ -12,4 +12,4 @@ steps:
     inline: |
       echo "Uploading files..."
       sudo apt install rsync -y
-      rsync -avz $(Build.SourcesDirectory)/ azureuser@40.81.228.8:/var/www/html/
+      rsync -avz $(Build.SourcesDirectory)/ nazeer@40.81.228.8:/var/www/html/
