@@ -1,5 +1,5 @@
 trigger:
-- main   # or your branch name
+- main
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -20,21 +20,11 @@ steps:
   inputs:
     artifact: 'drop'
     path: '$(Pipeline.Workspace)/drop'
-    
-- task: SSH@0
-  inputs:
-    sshEndpoint: 'radicalVMSC'
-    runOptions: 'inline'
-    inline: |
-      sudo rm -rf /var/www/html/*
-      sudo mkdir -p /var/www/html
-      exit 0
 
 - task: SSH@0
   inputs:
     sshEndpoint: 'radicalVMSC'
     runOptions: 'inline'
     inline: |
-      echo "Uploading files..."
       sudo apt install rsync -y
-      rsync -avz ./drop/ /var/www/html/
+      rsync -avz $(Pipeline.Workspace)/drop/ /var/www/html/
