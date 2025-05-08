@@ -1,35 +1,37 @@
 trigger:
-  branches:
-    include:
-      - main
+- main   # or your branch name
 
 pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- checkout: self
-
-- script: |
-    sudo apt-get update
-    sudo apt-get install zip unzip
-    zip -r output.zip . -x "*.git*"
-  displayName: 'Create Deployment Package'
-
-- task: PublishPipelineArtifact@1
+- task: CopyFiles@2
   inputs:
-    targetPath: 'output.zip'
-    artifact: 'drop'
-    publishLocation: 'pipeline'
+    SourceFolder: '$(Build.SourcesDirectory)'
+    Contents: '**'
+    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'drop'
 
 - task: DownloadPipelineArtifact@2
   inputs:
-    buildType: 'current'
-    artifactName: 'drop'
-    targetPath: '$(Pipeline.Workspace)'
+    artifact: 'drop'
+    path: '$(Pipeline.Workspace)/drop'
 
-- task: AzureWebApp@1
+- task: SSH@0
   inputs:
-    azureSubscription: 'radicalSC'  # Your service connection name
-    appName: 'radicaldemoapp'       # Your Azure App Service name
-    package: '$(Pipeline.Workspace)/output.zip' # Path to your zip file
-  displayName: 'Deploy to Azure App Service'
+    sshEndpoint: 'radicalSC'
+    runOptions: 'commands'
+    commands: |
+      sudo rm -rf /var/www/html/*
+      sudo mkdir -p /var/www/html
+      exit 0
+
+- task: SSH@0
+  inputs:
+    sshEndpoint: 'radicalSC'
+    runOptions: 'script'
+    scriptPath: '$(Pipeline.Workspace)/deploy.sh'
